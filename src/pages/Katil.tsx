@@ -3,7 +3,8 @@ import SiteHeader from "../components/SiteHeader";
 import SiteFooter from "../components/SiteFooter";
 import Button from "../components/Button";
 import { Shield, Heart, Users } from "lucide-react";
-import { useFormik } from "formik";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 import * as Yup from "yup";
 
 const validationSchema = Yup.object({
@@ -17,7 +18,18 @@ const validationSchema = Yup.object({
   newsletter: Yup.boolean(),
 });
 
-const initialValues = {
+type FormValues = {
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  participationType: string;
+  message: string;
+  acceptTerms: boolean;
+  newsletter: boolean;
+};
+
+const defaultValues: FormValues = {
   name: "",
   email: "",
   phone: "",
@@ -29,14 +41,15 @@ const initialValues = {
 };
 
 const Katil: React.FC = () => {
-  const formik = useFormik({
-    initialValues,
-    validationSchema,
-    onSubmit: (values, { resetForm }) => {
-      alert("Katılım formunuz başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.");
-      resetForm();
-    },
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+    defaultValues,
+    resolver: yupResolver(validationSchema) as any, // Type assertion to fix type error
   });
+
+  const onSubmit = (data: FormValues) => {
+    alert("Katılım formunuz başarıyla gönderildi. En kısa sürede sizinle iletişime geçeceğiz.");
+    reset();
+  };
 
   return (
     <div className="min-h-screen">
@@ -152,7 +165,7 @@ const Katil: React.FC = () => {
               </h2>
               <p className="text-gray-600 text-lg">Çitaların korunması için bizimle birlikte hareket edin</p>
             </div>
-            <form onSubmit={formik.handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="name" className="text-gray-700 font-semibold block">
@@ -160,15 +173,12 @@ const Katil: React.FC = () => {
                   </label>
                   <input
                     id="name"
-                    name="name"
+                    {...register("name")}
                     type="text"
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#516655]"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.name}
                   />
-                  {formik.touched.name && formik.errors.name && (
-                    <div className="text-red-500 text-sm">{formik.errors.name}</div>
+                  {errors.name && (
+                    <div className="text-red-500 text-sm">{errors.name.message}</div>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -177,15 +187,12 @@ const Katil: React.FC = () => {
                   </label>
                   <input
                     id="email"
-                    name="email"
+                    {...register("email")}
                     type="email"
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#516655]"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.email}
                   />
-                  {formik.touched.email && formik.errors.email && (
-                    <div className="text-red-500 text-sm">{formik.errors.email}</div>
+                  {errors.email && (
+                    <div className="text-red-500 text-sm">{errors.email.message}</div>
                   )}
                 </div>
               </div>
@@ -196,12 +203,9 @@ const Katil: React.FC = () => {
                   </label>
                   <input
                     id="phone"
-                    name="phone"
+                    {...register("phone")}
                     type="text"
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#516655]"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.phone}
                   />
                 </div>
                 <div className="space-y-2">
@@ -210,12 +214,9 @@ const Katil: React.FC = () => {
                   </label>
                   <input
                     id="city"
-                    name="city"
+                    {...register("city")}
                     type="text"
                     className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#516655]"
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values.city}
                   />
                 </div>
               </div>
@@ -225,20 +226,17 @@ const Katil: React.FC = () => {
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
-                      name="participationType"
                       value="volunteer"
-                      checked={formik.values.participationType === "volunteer"}
-                      onChange={formik.handleChange}
+                      {...register("participationType")}
+                      defaultChecked
                     />
                     Gönüllü
                   </label>
                   <label className="flex items-center gap-2">
                     <input
                       type="radio"
-                      name="participationType"
                       value="donor"
-                      checked={formik.values.participationType === "donor"}
-                      onChange={formik.handleChange}
+                      {...register("participationType")}
                     />
                     Bağışçı
                   </label>
@@ -250,35 +248,28 @@ const Katil: React.FC = () => {
                 </label>
                 <textarea
                   id="message"
-                  name="message"
+                  {...register("message")}
                   rows={4}
                   className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#516655]"
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                  value={formik.values.message}
                 />
               </div>
               <div className="flex flex-col md:flex-row md:items-center md:gap-6 gap-2">
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    name="acceptTerms"
-                    checked={formik.values.acceptTerms}
-                    onChange={formik.handleChange}
+                    {...register("acceptTerms")}
                   />
                   <span>
                     <span className="text-red-500">*</span> Koşulları kabul ediyorum
                   </span>
                 </label>
-                {formik.touched.acceptTerms && formik.errors.acceptTerms && (
-                  <div className="text-red-500 text-sm">{formik.errors.acceptTerms}</div>
+                {errors.acceptTerms && (
+                  <div className="text-red-500 text-sm">{errors.acceptTerms.message}</div>
                 )}
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
-                    name="newsletter"
-                    checked={formik.values.newsletter}
-                    onChange={formik.handleChange}
+                    {...register("newsletter")}
                   />
                   E-posta ile bilgilendirme almak istiyorum
                 </label>
